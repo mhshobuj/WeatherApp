@@ -8,7 +8,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.mhs.weatherapp.databinding.CityWeatherItemViewBinding
 import com.mhs.weatherapp.model.CityWeatherListResponse
 import com.mhs.weatherapp.view.DetailsWeatherInfo
-import java.io.Serializable
 import javax.inject.Inject
 import kotlin.math.roundToInt
 

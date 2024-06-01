@@ -99,6 +99,12 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
             }
+        } else{
+            Toast.makeText(
+                this@MainActivity,
+                "Internet not available!!",
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
 

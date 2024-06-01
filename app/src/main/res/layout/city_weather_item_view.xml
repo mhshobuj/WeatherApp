@@ -37,6 +37,7 @@
                     android:background="@android:color/transparent"
                     android:fontFamily="@font/roboto_regular"
                     android:maxLines="1"
+                    android:layout_marginTop="@dimen/_2sdp"
                     android:textColor="@color/black"
                     android:textSize="@dimen/_14ssp"
                     tools:text="Name" />
@@ -47,6 +48,7 @@
                     android:layout_height="wrap_content"
                     android:background="@android:color/transparent"
                     android:fontFamily="@font/roboto_regular"
+                    android:layout_marginBottom="@dimen/_2sdp"
                     android:gravity="center"
                     android:maxLines="1"
                     android:textColor="@color/black"

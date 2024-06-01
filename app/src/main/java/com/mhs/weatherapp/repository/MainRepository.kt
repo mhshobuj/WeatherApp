@@ -30,4 +30,25 @@ class MainRepository@Inject constructor(private val apiService: ApiService) {
     }.catch {
         emit(DataStatus.error(it.message.toString()))
     }.flowOn(Dispatchers.IO)
+
+    suspend fun getCityWeatherDetails(cityName: String, appid: String) = flow {
+        emit(DataStatus.loading())
+        val result = apiService.getCityWeatherDetails(cityName, appid)
+        when (result.code()) {
+            200 -> {
+                emit(DataStatus.success(result.body()))
+            }
+            400 -> {
+                emit(DataStatus.error(result.message()))
+            }
+            500 -> {
+                emit(DataStatus.error(result.message()))
+            }
+            else -> {
+                emit(DataStatus.error("Unexpected error: ${result.message()}"))
+            }
+        }
+    }.catch {
+        emit(DataStatus.error(it.message.toString()))
+    }.flowOn(Dispatchers.IO)
 }
