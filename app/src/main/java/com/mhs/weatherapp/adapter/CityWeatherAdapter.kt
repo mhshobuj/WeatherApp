@@ -1,4 +1,5 @@
 package com.mhs.weatherapp.adapter
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
 import android.view.LayoutInflater
@@ -7,6 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.mhs.weatherapp.databinding.CityWeatherItemViewBinding
 import com.mhs.weatherapp.model.CityWeatherListResponse
 import javax.inject.Inject
+import kotlin.math.roundToInt
 
 class CityWeatherAdapter @Inject constructor(private val context: Context) : RecyclerView.Adapter<CityWeatherAdapter.MyViewHolder>() {
 
@@ -14,13 +16,14 @@ class CityWeatherAdapter @Inject constructor(private val context: Context) : Rec
 
     inner class MyViewHolder(private val itemBinding: CityWeatherItemViewBinding) : RecyclerView.ViewHolder(itemBinding.root) {
         // Bind data to the views
+        @SuppressLint("SetTextI18n")
         fun bind(item: CityWeatherListResponse.CityWeather) {
             itemBinding.apply {
                 tvNameCity.text = item.name
                 tvDescription.text = item.weather[0].description
-                tvTemp.text = item.main.temp.toString()
-
-                Log.e("data", "" + item.name)
+                val mainTemp: Double = item.main.temp
+                val celsiusTemp: Double = (mainTemp - 273.15)
+                tvTemp.text = "${celsiusTemp.roundToInt()}°c"
 
                 /*// Set onClickListener for the entire item
                 root.setOnClickListener {
