@@ -38,9 +38,9 @@ class MainViewModel @Inject constructor(private val mainRepository: MainReposito
     val cityWeatherDetails: LiveData<DataStatus<CityWeatherDetailsResponse>> get() = _cityWeatherDetails
 
     /**
-     * Fetches a list of city weather details data from the repository.
+     * Fetches a city weather details data from the repository.
      *
-     * @param cityName name of cities
+     * @param cityName name of city
      * @param appid API key for authentication.
      */
     fun getCityWeatherDetails(cityName: String, appid: String) = viewModelScope.launch {
