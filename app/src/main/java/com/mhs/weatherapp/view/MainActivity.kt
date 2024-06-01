@@ -48,6 +48,8 @@ class MainActivity : AppCompatActivity() {
             insets
         }
 
+        binding.toolbarLayout.ivBack.visibility = View.GONE
+
         // Change status bar color
         val window = this.window
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)

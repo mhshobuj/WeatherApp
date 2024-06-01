@@ -1,12 +1,14 @@
 package com.mhs.weatherapp.adapter
 import android.annotation.SuppressLint
 import android.content.Context
-import android.util.Log
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.mhs.weatherapp.databinding.CityWeatherItemViewBinding
 import com.mhs.weatherapp.model.CityWeatherListResponse
+import com.mhs.weatherapp.view.DetailsWeatherInfo
+import java.io.Serializable
 import javax.inject.Inject
 import kotlin.math.roundToInt
 
@@ -25,15 +27,14 @@ class CityWeatherAdapter @Inject constructor(private val context: Context) : Rec
                 val celsiusTemp: Double = (mainTemp - 273.15)
                 tvTemp.text = "${celsiusTemp.roundToInt()}°c"
 
-                /*// Set onClickListener for the entire item
+                // Set onClickListener for the entire item
                 root.setOnClickListener {
-                    // Create an Intent to open the CharacterDetailsActivity
-                    val intent = Intent(context, CharacterDetailsActivity::class.java)
-                    // Add the character's URL as an extra to the Intent
-                    intent.putExtra("itemURL", item.url)
-                    // Start the DetailsActivity
+                    val intent = Intent(context, DetailsWeatherInfo::class.java)
+                    // Pass specific values from the clicked item as extras
+                    intent.putExtra("CITY_NAME", item.name)
+                    // Start the DetailsWeatherInfo activity
                     context.startActivity(intent)
-                }*/
+                }
             }
         }
     }
