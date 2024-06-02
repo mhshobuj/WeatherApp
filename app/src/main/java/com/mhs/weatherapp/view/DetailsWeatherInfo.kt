@@ -1,6 +1,6 @@
 package com.mhs.weatherapp.view
 
-import Constants
+import com.mhs.weatherapp.utils.Constants
 import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
@@ -28,7 +28,6 @@ import isVisible
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlin.math.ln
 import kotlin.math.roundToInt
 
 @AndroidEntryPoint

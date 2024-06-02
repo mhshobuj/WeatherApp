@@ -1,7 +1,7 @@
 package com.mhs.weatherapp.di
 
-import Constants.BASE_URL
-import Constants.NETWORK_TIMEOUT
+import com.mhs.weatherapp.utils.Constants.BASE_URL
+import com.mhs.weatherapp.utils.Constants.NETWORK_TIMEOUT
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.mhs.weatherapp.api.ApiService

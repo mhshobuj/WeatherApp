@@ -4,12 +4,10 @@ import com.mhs.weatherapp.utils.DataStatus
 import com.mhs.weatherapp.utils.NetworkChecking
 import android.os.Bundle
 import android.view.View
-import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
@@ -17,6 +15,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.mhs.weatherapp.R
 import com.mhs.weatherapp.adapter.CityWeatherAdapter
 import com.mhs.weatherapp.databinding.ActivityMainBinding
+import com.mhs.weatherapp.utils.Constants
 import com.mhs.weatherapp.utils.StatusBarUtils
 import com.mhs.weatherapp.viewModel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
