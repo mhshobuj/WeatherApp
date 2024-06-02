@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.mhs.weatherapp.R
 import com.mhs.weatherapp.adapter.CityWeatherAdapter
 import com.mhs.weatherapp.databinding.ActivityMainBinding
+import com.mhs.weatherapp.utils.StatusBarUtils
 import com.mhs.weatherapp.viewModel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import initRecycler
@@ -50,13 +51,8 @@ class MainActivity : AppCompatActivity() {
 
         binding.toolbarLayout.ivBack.visibility = View.GONE
 
-        // Change status bar color
-        val window = this.window
-        window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-        window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-        window.statusBarColor = ContextCompat.getColor(this, R.color.STATUS_BAR_COLOR)
-        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-        window.decorView.systemUiVisibility = 0
+        // Set the status bar color
+        StatusBarUtils.setStatusBarColor(this, R.color.STATUS_BAR_COLOR, lightStatusBar = true)
 
         // Network checking
         val networkChecking = NetworkChecking
