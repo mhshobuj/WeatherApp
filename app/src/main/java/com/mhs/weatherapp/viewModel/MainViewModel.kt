@@ -48,4 +48,20 @@ class MainViewModel @Inject constructor(private val mainRepository: MainReposito
             _cityWeatherDetails.value = it
         }
     }
+
+    // LiveData for city weather details
+    private val _latLngWeatherDetails = MutableLiveData<DataStatus<CityWeatherDetailsResponse>>()
+    val latLngWeatherDetails: LiveData<DataStatus<CityWeatherDetailsResponse>> get() = _latLngWeatherDetails
+
+    /**
+     * Fetches a city weather details data from the repository.
+     *
+     * @param cityName name of city
+     * @param appid API key for authentication.
+     */
+    fun getWeatherByLatLng(lat: Double,lng: Double, appid: String) = viewModelScope.launch {
+        mainRepository.getWeatherByLatLng(lat, lng, appid).collect {
+            _latLngWeatherDetails.value = it
+        }
+    }
 }

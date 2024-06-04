@@ -1,21 +1,39 @@
 package com.mhs.weatherapp.view
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.icu.util.Calendar
 import com.mhs.weatherapp.utils.DataStatus
 import com.mhs.weatherapp.utils.NetworkChecking
 import android.os.Bundle
+import android.os.Looper
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.work.Data
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
+import com.google.android.gms.location.LocationServices
 import com.mhs.weatherapp.R
 import com.mhs.weatherapp.adapter.CityWeatherAdapter
 import com.mhs.weatherapp.databinding.ActivityMainBinding
 import com.mhs.weatherapp.utils.Constants
+import com.mhs.weatherapp.utils.NotificationWorker
 import com.mhs.weatherapp.utils.StatusBarUtils
 import com.mhs.weatherapp.viewModel.MainViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,6 +42,7 @@ import isVisible
 import kotlinx.coroutines.DelicateCoroutinesApi
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
+import java.util.concurrent.TimeUnit
 
 
 @AndroidEntryPoint
@@ -33,6 +52,9 @@ class MainActivity : AppCompatActivity() {
     private val viewModel: MainViewModel by viewModels()
     private var cityWeatherAdapter: CityWeatherAdapter? = null
     private var connectivityStatus: String? = null
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private var final_lat: Double = 0.0
+    private var final_lng: Double = 0.0
 
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,6 +69,9 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        checkLocationPermission()
 
         binding.toolbarLayout.ivBack.visibility = View.GONE
 
@@ -64,6 +89,141 @@ class MainActivity : AppCompatActivity() {
             getCityWeatherList()
         }
 
+        //setNotification
+        if (final_lat != 0.0 && final_lng != 0.0){
+            scheduleDailyNotification(final_lat, final_lng)
+        }
+    }
+
+    //create notification channel
+    private fun scheduleDailyNotification(lat: Double, lng: Double) {
+        val currentTime = Calendar.getInstance()
+        val notificationTime = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 19) // Set the desired hour (16 = 4:00 PM)
+            set(Calendar.MINUTE, 43) // Set the desired minute
+            set(Calendar.SECOND, 0) // Set the desired second
+        }
+
+        if (notificationTime.before(currentTime)) {
+            notificationTime.add(Calendar.DAY_OF_MONTH, 1)
+        }
+
+        val delay = notificationTime.timeInMillis - currentTime.timeInMillis
+
+        val inputData = Data.Builder()
+            .putDouble("LATITUDE", lat)
+            .putDouble("LONGITUDE", lng)
+            .build()
+
+        // Initial one-time request to schedule the first notification
+        val oneTimeRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
+            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+            .setInputData(inputData)
+            .build()
+
+        WorkManager.getInstance(this).enqueue(oneTimeRequest)
+
+        // Periodic work request to repeat the notification daily
+        val periodicWorkRequest = PeriodicWorkRequestBuilder<NotificationWorker>(24, TimeUnit.HOURS)
+            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+            .build()
+
+        WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "DailyNotificationWork",
+            ExistingPeriodicWorkPolicy.REPLACE,
+            periodicWorkRequest
+        )
+    }
+
+    // Call this method to check and request permissions
+    private fun checkLocationPermission() {
+        locationPermissionRequest.launch(arrayOf(
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+        ))
+    }
+
+    private val locationPermissionRequest = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        when {
+            permissions.getOrDefault(Manifest.permission.ACCESS_FINE_LOCATION, false) -> {
+                // Precise location access granted.
+                getCurrentLocation()
+            }
+            permissions.getOrDefault(Manifest.permission.ACCESS_COARSE_LOCATION, false) -> {
+                // Only approximate location access granted.
+                getCurrentLocation()
+            }
+            else -> {
+                // No location access granted.
+            }
+        }
+    }
+
+    private fun getCurrentLocation() {
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+
+        fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                if (location != null) {
+                    // Use the location object
+                    val latitude = location.latitude
+                    val longitude = location.longitude
+                    // Do something with the location data
+                    Log.e("Main", "1st$latitude$longitude")
+                    final_lat = latitude
+                    final_lng = longitude
+                } else {
+                    // Request new location data if the last known location is null
+                    requestNewLocationData()
+                }
+            }
+    }
+
+    private fun requestNewLocationData() {
+        val locationRequest = LocationRequest.create().apply {
+            interval = 10000 // 10 seconds
+            fastestInterval = 5000 // 5 seconds
+            priority = LocationRequest.PRIORITY_HIGH_ACCURACY
+        }
+
+        if (ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_COARSE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            return
+        }
+
+        fusedLocationClient.requestLocationUpdates(locationRequest, locationCallback, Looper.getMainLooper())
+    }
+
+    private val locationCallback = object : LocationCallback() {
+        override fun onLocationResult(locationResult: LocationResult) {
+            locationResult
+            for (location in locationResult.locations) {
+                // Update UI with location data
+                val latitude = location.latitude
+                val longitude = location.longitude
+                // Do something with the location data
+                Log.e("Main", "2nd$latitude$longitude")
+                final_lat = latitude
+                final_lng = longitude
+            }
+            fusedLocationClient.removeLocationUpdates(this)
+        }
     }
 
     private fun getCityWeatherList() {

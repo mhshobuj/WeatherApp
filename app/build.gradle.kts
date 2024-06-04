@@ -91,4 +91,7 @@ dependencies {
     implementation ("com.google.android.gms:play-services-maps:18.0.2")
     implementation ("com.google.android.gms:play-services-location:19.0.1")
     implementation ("com.google.maps.android:android-maps-utils:0.5")
+
+    /**work manager **/
+    implementation ("androidx.work:work-runtime-ktx:2.8.1")
 }
