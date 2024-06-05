@@ -21,7 +21,6 @@ class SplashScreen : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
         // Delay for 3 seconds
         Handler(Looper.getMainLooper()).postDelayed({
             // Start MainActivity

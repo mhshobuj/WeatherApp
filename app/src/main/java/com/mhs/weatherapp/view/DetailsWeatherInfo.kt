@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import coil.load
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -71,8 +72,6 @@ class DetailsWeatherInfo : AppCompatActivity(), OnMapReadyCallback {
 
         // Retrieve the value for "CITY_NAME" extra from the Intent
         val cityName = intent.getStringExtra("CITY_NAME")
-        Log.e("Details", "" + cityName)
-
         if (cityName != null) {
             GlobalScope.launch {
                 getCityWeatherDetails(cityName)
@@ -94,8 +93,7 @@ class DetailsWeatherInfo : AppCompatActivity(), OnMapReadyCallback {
 
                             DataStatus.Status.SUCCESS -> {
                                 pBarLoading.isVisible(false, mainLayout)
-                                Log.e("Details", "" + it.data!!.base)
-                                tvNameCity.text = it.data.name
+                                tvNameCity.text = it.data!!.name
                                 tvDescription.text = it.data.weather[0].main
                                 tvHumidity.text = "Humidity: ${it.data.main.humidity}"
                                 tvWindSpeed.text = "Wind Speed: ${it.data.wind.speed}"
@@ -112,6 +110,14 @@ class DetailsWeatherInfo : AppCompatActivity(), OnMapReadyCallback {
                                 tvMaxTemp.text = "Max. Temp: ${celsiusMaxTemp.roundToInt()}°c"
                                 tvMinTemp.text = "Min. Temp: ${celsiusMinTemp.roundToInt()}°c"
                                 tvTemp.text = "${celsiusTemp.roundToInt()}°c"
+
+                                val icon = it.data.weather[0].icon
+                                val image_url = "https://openweathermap.org/img/wn/$icon@2x.png"
+
+                                imgWeatherCondition.load(image_url){
+                                    crossfade(true)
+                                    crossfade(500)
+                                }
 
                                 // Update latitude and longitude
                                 lat = it.data.coord.lat

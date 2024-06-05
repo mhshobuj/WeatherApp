@@ -102,7 +102,7 @@ class MainActivity : AppCompatActivity() {
                             DataStatus.Status.SUCCESS -> {
                                 pBarLoading.isVisible(false, rvCityWeather)
                                 it?.let {
-                                    scheduleDailyNotification(it.data!!.main.temp)
+                                    scheduleDailyNotification(it.data!!.main.temp, it.data.weather[0].icon)
                                 }
                             }
 
@@ -127,11 +127,11 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun scheduleDailyNotification(temp: Double) {
+    private fun scheduleDailyNotification(temp: Double, icon: String) {
         val currentTime = Calendar.getInstance()
         val notificationTime = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 13)
-            set(Calendar.MINUTE, 46)
+            set(Calendar.HOUR_OF_DAY, 16)
+            set(Calendar.MINUTE, 15)
             set(Calendar.SECOND, 0)
             if (before(currentTime)) {
                 add(Calendar.DAY_OF_MONTH, 1)
@@ -142,6 +142,7 @@ class MainActivity : AppCompatActivity() {
 
         val inputData = Data.Builder()
             .putDouble("TEMP", temp)
+            .putString("ICON", icon)
             .build()
 
         val oneTimeRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
@@ -208,7 +209,6 @@ class MainActivity : AppCompatActivity() {
                     val latitude = location.latitude
                     val longitude = location.longitude
                     // Do something with the location data
-                    Log.e("Main", "1st$latitude$longitude")
                     fetchWeatherDataAndScheduleNotification(latitude, longitude)
                 } else {
                     // Request new location data if the last known location is null
@@ -246,7 +246,6 @@ class MainActivity : AppCompatActivity() {
                 val latitude = location.latitude
                 val longitude = location.longitude
                 // Do something with the location data
-                Log.e("Main", "2nd$latitude$longitude")
                 fetchWeatherDataAndScheduleNotification(latitude, longitude)
             }
             fusedLocationClient.removeLocationUpdates(this)

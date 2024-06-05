@@ -94,4 +94,8 @@ dependencies {
 
     /**work manager **/
     implementation ("androidx.work:work-runtime-ktx:2.8.1")
+
+    /** image download **/
+    implementation ("io.coil-kt:coil:2.2.2")
+    implementation ("com.github.bumptech.glide:glide:4.16.0")
 }

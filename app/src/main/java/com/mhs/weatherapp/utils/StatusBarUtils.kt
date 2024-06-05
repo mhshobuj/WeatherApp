@@ -12,12 +12,10 @@ object StatusBarUtils {
         window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
         window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
         window.statusBarColor = ContextCompat.getColor(activity, colorResId)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            window.decorView.systemUiVisibility = if (lightStatusBar) {
-                View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-            } else {
-                0
-            }
+        window.decorView.systemUiVisibility = if (lightStatusBar) {
+            View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        } else {
+            0
         }
     }
 }

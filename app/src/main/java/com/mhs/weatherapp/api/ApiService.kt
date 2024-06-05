@@ -23,6 +23,7 @@ interface ApiService {
         @Query("appid") appid: String
     ): Response<CityWeatherDetailsResponse>
 
+    // Get weather data by LatLng
     @GET("data/2.5/weather")
     suspend fun getWeatherByLatLng(
         @Query("lat") lat: Double,

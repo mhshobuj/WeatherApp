@@ -1,6 +1,4 @@
 package com.mhs.weatherapp.model
-
-
 import com.google.gson.annotations.SerializedName
 
 data class CityWeatherListResponse(
