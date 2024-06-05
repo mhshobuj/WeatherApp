@@ -21,10 +21,6 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.request.target.CustomTarget
 import com.mhs.weatherapp.R
 import com.mhs.weatherapp.view.MainActivity
-import java.io.IOException
-import java.io.InputStream
-import java.net.HttpURLConnection
-import java.net.URL
 import kotlin.math.roundToInt
 
 class NotificationWorker(

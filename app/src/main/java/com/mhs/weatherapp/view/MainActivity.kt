@@ -7,7 +7,6 @@ import com.mhs.weatherapp.utils.DataStatus
 import com.mhs.weatherapp.utils.NetworkChecking
 import android.os.Bundle
 import android.os.Looper
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -130,8 +129,8 @@ class MainActivity : AppCompatActivity() {
     private fun scheduleDailyNotification(temp: Double, icon: String) {
         val currentTime = Calendar.getInstance()
         val notificationTime = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 16)
-            set(Calendar.MINUTE, 15)
+            set(Calendar.HOUR_OF_DAY, 22)
+            set(Calendar.MINUTE, 9)
             set(Calendar.SECOND, 0)
             if (before(currentTime)) {
                 add(Calendar.DAY_OF_MONTH, 1)
