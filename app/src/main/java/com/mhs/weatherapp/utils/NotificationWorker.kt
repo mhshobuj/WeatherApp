@@ -15,56 +15,54 @@ import androidx.work.Worker
 import androidx.work.WorkerParameters
 import com.mhs.weatherapp.R
 import com.mhs.weatherapp.view.MainActivity
+import kotlin.math.roundToInt
 
-class NotificationWorker(appContext: Context, workerParams: WorkerParameters) :
-    Worker(appContext, workerParams) {
+class NotificationWorker(
+    appContext: Context,
+    workerParams: WorkerParameters
+) : Worker(appContext, workerParams) {
 
     override fun doWork(): Result {
-        // Display the notification
+        val temp = inputData.getDouble("TEMP", 0.0)
+        // Convert temperatures from Kelvin to Celsius
+        val celsiusTemp: Double = (temp - 273.15)
 
-        val lat = inputData.getDouble("LATITUDE", 0.0)
-        val lng = inputData.getDouble("LONGITUDE", 0.0)
-
-        showNotification()
-
+        showNotification(celsiusTemp)
         return Result.success()
     }
 
-    private fun showNotification() {
+    private fun showNotification(temp: Double) {
         val notificationId = 1
-        val channelId = "notification_channel"
+        val channelId = "weather_update_channel"
 
         val intent = Intent(applicationContext, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         }
-        val pendingIntent: PendingIntent = PendingIntent.getActivity(applicationContext, 0, intent,
-            PendingIntent.FLAG_IMMUTABLE)
+        val pendingIntent: PendingIntent = PendingIntent.getActivity(
+            applicationContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
         val builder = NotificationCompat.Builder(applicationContext, channelId)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentTitle("Scheduled Notification")
-            .setContentText("This is a notification scheduled at a specific time.")
+            .setContentTitle("WeatherApp")
+            .setContentText("Current Temperature: ${temp.roundToInt()}°C")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)
 
-        // Create the NotificationChannel, but only on API 26+ because
-        // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val name = "Notification Channel"
-            val descriptionText = "This is a notification channel for scheduled notifications."
+            val name = "Weather Update Channel"
+            val descriptionText = "This channel provides weather updates."
             val importance = NotificationManager.IMPORTANCE_HIGH
             val channel = NotificationChannel(channelId, name, importance).apply {
-                description = descriptionText
+                descriptionText
             }
-            // Register the channel with the system
             val notificationManager: NotificationManager =
                 applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
             notificationManager.createNotificationChannel(channel)
         }
 
         with(NotificationManagerCompat.from(applicationContext)) {
-            // NotificationId is a unique int for each notification that you must define
             if (ActivityCompat.checkSelfPermission(
                     applicationContext,
                     Manifest.permission.POST_NOTIFICATIONS
@@ -83,3 +81,4 @@ class NotificationWorker(appContext: Context, workerParams: WorkerParameters) :
         }
     }
 }
+

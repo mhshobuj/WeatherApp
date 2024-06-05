@@ -44,7 +44,6 @@ import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.util.concurrent.TimeUnit
 
-
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
@@ -53,8 +52,6 @@ class MainActivity : AppCompatActivity() {
     private var cityWeatherAdapter: CityWeatherAdapter? = null
     private var connectivityStatus: String? = null
     private lateinit var fusedLocationClient: FusedLocationProviderClient
-    private var final_lat: Double = 0.0
-    private var final_lng: Double = 0.0
 
     @OptIn(DelicateCoroutinesApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -88,34 +85,65 @@ class MainActivity : AppCompatActivity() {
         GlobalScope.launch {
             getCityWeatherList()
         }
-
-        //setNotification
-        if (final_lat != 0.0 && final_lng != 0.0){
-            scheduleDailyNotification(final_lat, final_lng)
-        }
     }
 
     //create notification channel
-    private fun scheduleDailyNotification(lat: Double, lng: Double) {
+    private fun fetchWeatherDataAndScheduleNotification(lat: Double, lng: Double) {
+        if (connectivityStatus == "Wifi enabled" || connectivityStatus == "Mobile data enabled") {
+            lifecycleScope.launch {
+                binding.apply {
+                    viewModel.getWeatherByLatLng(lat, lng, Constants.APP_ID)
+                    viewModel.latLngWeatherDetails.observe(this@MainActivity) {
+                        when (it.status) {
+                            DataStatus.Status.LOADING -> {
+                                pBarLoading.isVisible(true, rvCityWeather)
+                            }
+
+                            DataStatus.Status.SUCCESS -> {
+                                pBarLoading.isVisible(false, rvCityWeather)
+                                it?.let {
+                                    scheduleDailyNotification(it.data!!.main.temp)
+                                }
+                            }
+
+                            DataStatus.Status.ERROR -> {
+                                pBarLoading.isVisible(false, rvCityWeather)
+                                Toast.makeText(
+                                    this@MainActivity,
+                                    "There is something wrong!!",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                    }
+                }
+            }
+        } else{
+            Toast.makeText(
+                this@MainActivity,
+                "Internet not available!!",
+                Toast.LENGTH_LONG
+            ).show()
+        }
+    }
+
+    private fun scheduleDailyNotification(temp: Double) {
         val currentTime = Calendar.getInstance()
         val notificationTime = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 19) // Set the desired hour (16 = 4:00 PM)
-            set(Calendar.MINUTE, 43) // Set the desired minute
-            set(Calendar.SECOND, 0) // Set the desired second
-        }
-
-        if (notificationTime.before(currentTime)) {
-            notificationTime.add(Calendar.DAY_OF_MONTH, 1)
+            set(Calendar.HOUR_OF_DAY, 13)
+            set(Calendar.MINUTE, 46)
+            set(Calendar.SECOND, 0)
+            if (before(currentTime)) {
+                add(Calendar.DAY_OF_MONTH, 1)
+            }
         }
 
         val delay = notificationTime.timeInMillis - currentTime.timeInMillis
 
         val inputData = Data.Builder()
-            .putDouble("LATITUDE", lat)
-            .putDouble("LONGITUDE", lng)
+            .putDouble("TEMP", temp)
             .build()
 
-        // Initial one-time request to schedule the first notification
         val oneTimeRequest = OneTimeWorkRequestBuilder<NotificationWorker>()
             .setInitialDelay(delay, TimeUnit.MILLISECONDS)
             .setInputData(inputData)
@@ -123,17 +151,18 @@ class MainActivity : AppCompatActivity() {
 
         WorkManager.getInstance(this).enqueue(oneTimeRequest)
 
-        // Periodic work request to repeat the notification daily
         val periodicWorkRequest = PeriodicWorkRequestBuilder<NotificationWorker>(24, TimeUnit.HOURS)
             .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+            .setInputData(inputData)
             .build()
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
             "DailyNotificationWork",
-            ExistingPeriodicWorkPolicy.REPLACE,
+            ExistingPeriodicWorkPolicy.UPDATE,
             periodicWorkRequest
         )
     }
+
 
     // Call this method to check and request permissions
     private fun checkLocationPermission() {
@@ -180,8 +209,7 @@ class MainActivity : AppCompatActivity() {
                     val longitude = location.longitude
                     // Do something with the location data
                     Log.e("Main", "1st$latitude$longitude")
-                    final_lat = latitude
-                    final_lng = longitude
+                    fetchWeatherDataAndScheduleNotification(latitude, longitude)
                 } else {
                     // Request new location data if the last known location is null
                     requestNewLocationData()
@@ -219,8 +247,7 @@ class MainActivity : AppCompatActivity() {
                 val longitude = location.longitude
                 // Do something with the location data
                 Log.e("Main", "2nd$latitude$longitude")
-                final_lat = latitude
-                final_lng = longitude
+                fetchWeatherDataAndScheduleNotification(latitude, longitude)
             }
             fusedLocationClient.removeLocationUpdates(this)
         }
